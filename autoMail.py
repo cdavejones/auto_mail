@@ -6,6 +6,7 @@ import threading
 import sys
 from time import gmtime, strftime
 from email import parser
+
 class autoMail:
 
  def __init__(self,server,user,password,save_dir):
@@ -35,8 +36,8 @@ class autoMail:
    self.wait_state=self.wait_max
    ping = 1
    while(ping != 0):                          
-    ping = os.system("ping -c 1 " + self.pop_server)                                           
-                              
+    ping = os.system("ping -c 1 " + self.pop_server+ " > log.txt")                                           
+                     
    self.finish = False                            
    if self.saveMail(self.getMail()) != None:
     self.wait_state=self.wait_min
@@ -81,28 +82,26 @@ class autoMail:
     
     mail_add = str(message['From'])[str(message['From']).find('<')+1:].strip('>')
     
-    out_dir=self.save_dir+mail_add
+    out_dir=self.save_dir+mail_add+".mail"
     if os.path.isfile(out_dir) == False:
      fp=open(out_dir,'w')
-     fp.write("")
+     fp.write("#$auto_mail@MAIL FILE$\n")
      fp.close()
     outFile =open(out_dir,'a')
     self.outMessage = (strftime("%m-%d-%Y- %H:%M:%S", time.localtime())+":New message from " + mail_add) 
     self.who.append(mail_add)
+    self.print_log("Date: "+str(message['Date'])+"|Local: "+strftime("%m-%d-%Y- %H:%M:%S", time.localtime())+"|From: "+mail_add+"|Message-ID: "+str(message['Message-Id'])+"|Subject: "+str(message['Subject'])+"|\n")
+   
     st = str(message).find('\n\n')
     outFile.write('************MESSAGE**************\n')
     outFile.write((str(message)))
     outFile.write('\n')
+    outFile.write('************!!!!!!!**************\n')
     outFile.close()
 
    return messages
   else:
    return None
-
-
-
-
-
 
 
 
@@ -165,5 +164,24 @@ class autoMail:
 
 
   return "pop"
+
+
+
+
+
+
+
+
+
+
+
+
+ def print_log(self,strng):
+  log_path=self.save_dir+"mail_log.log"
+  fp=open(log_path,'a')
+  fp.write(strng) 
+  fp.close()
+
+
 
   
