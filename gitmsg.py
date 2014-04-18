@@ -12,7 +12,23 @@ from email.mime.text import MIMEText
 from email.header import Header
 from random import randint
 import os
+global homer_simpson
+homer_simpson = """  
+      _____         
+     /     \       
+     \/\/     |      
+    |  (o)(o)       
+    C   .---_)    
+      | |.___|    
+      |  \__/     
+     /_____\       
+    /_____/ \       
+   /         \     
 
+  HOMER         
+
+
+"""
 try:
  import pyttsx
  print "Succesfully imported pyttsx"
@@ -87,7 +103,7 @@ class config_man:
  
  def save_token(self,token,value):
   self.load_token(token)
-  value+="\n"
+  value+=" \n"
   
   with open(self.file,'r') as fp:
    txt = fp.read()
@@ -168,6 +184,9 @@ class Window(Gtk.Window):
   #self.selected_txt = self.textbuffer.get_text(self.textbuffer.get_iter_at_mark(st),self.textbuffer.get_iter_at_mark(ed),False)
   temp = self.entry.get_text()
   self.entry.set_text("")
+  if temp == "homer":
+   send_it.send((homer_simpson))
+   return
   send_it.send((temp))
   self.write_text("\nYou: "+(temp))
  
@@ -392,6 +411,8 @@ def spawn(title):
 
 
 
+#port = 587
+#server = "smtp.gmail.com"
 MAIN_PATH = inz['m']
 config = config_man(MAIN_PATH+".gitmsg.config","#gitmsg.py settings")
 port = config.get_token("smtp_port")
