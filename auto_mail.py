@@ -7,7 +7,32 @@ import subprocess
 import bz2 
 import threading
 
-print "ok"
+homer_simpson = """    _ _,---._ 
+       ,-','       `-.___ 
+      /-;'               `._ 
+     /\/          ._   _,'o \ 
+    ( /\       _,--'\,','"`. ) 
+     |\      ,'o     \'    //\ 
+     |      \        /   ,--'""`-. 
+     :       \_    _/ ,-'         `-._ 
+      \        `--'  /                ) 
+       `.  \`._    ,'     ________,',' 
+         .--`     ,'  ,--` __\___,;' 
+          \`.,-- ,' ,`_)--'  /`.,' 
+           \( ;  | | )      (`-/ 
+             `--'| |)       |-/ 
+               | | |        | | 
+               | | |,.,-.   | |_ 
+               | `./ /   )---`  ) 
+              _|  /    ,',   ,-' 
+     -hrr-   ,'|_(    /-<._,' |--, 
+             |    `--'---.     \/ \ 
+             |          / \    /\  \ 
+           ,-^---._     |  \  /  \  \ 
+        ,-'        \----'   \/    \--`. 
+       /            \              \   \ 
+
+"""
 
 
 # 	To do list:  
@@ -222,17 +247,20 @@ class command_list:
   self.name = name
   self.func_dict = {}
   self.num_dict = {}
+  self.opt_dict = {}
   self.command_list = []
  def get_command_list(self):
   return self.command_list
 
- def add_command(self,func,num,string):
+ def add_command(self,func,num,string,option = 0):
    self.num_dict[string] = num
    self.func_dict[string] = func
+   self.opt_dict[string] = option
    self.command_list.append(string)
  def get_command_num(self,string):
   return self.num_dict[string]
-
+ def get_command_opt(self,string):
+  return self.opt_dict[string]
 
  def get_func_command(self,string):
   return self.func_dict[string]
@@ -248,15 +276,15 @@ class command_list:
   while x <= len(input_list)-1:
   
    if input_list[x] in self.get_command_list():
-  
+    opt= (self.get_command_opt(input_list[x]) if (len(input_list) - x ) - 1 >= self.get_command_num(input_list[x])+self.get_command_opt(input_list[x]) else 0) # This will be refactored later ;_;
     if (len(input_list) - x ) - 1 >= self.get_command_num(input_list[x]):
      to_func=[]
-     for num in range(x+1,x+self.get_command_num(input_list[x])+1):
+     for num in range(x+1,x+self.get_command_num(input_list[x])+1+opt):
      
       to_func.append(input_list[num])
      out_list.append(self.get_func_command(input_list[x])(to_func))
   
-     x+= self.get_command_num(input_list[x])+1
+     x+= self.get_command_num(input_list[x])+1+opt
   
     else:
    
@@ -268,7 +296,7 @@ class command_list:
   return out_list
 
 
-
+ 
 
 
 
@@ -282,18 +310,21 @@ def reply(pop):
  try:
   person = mail_table.getAdd(int(pop[0]))
   if person != pop[0]:
-   #subprocess.Popen(state.get_main_path()+("./gitmsg.py -a " + person), shell=True)
+ 
    send_mail(person)
-   return "."
+   return ""
   else:
    return "mail number does not exist!"
  except:
-  #subprocess.Popen(state.get_main_path()+("./gitmsg.py -a " + pop[0]), shell=True)
+  with open(state.get_main_path()+"addBook","r") as fp:
+   contacts = fp.readlines()
+  for i in contacts:
+   if pop[0].upper() in i[i.index(":")+1:-1].upper(): 
+    send_mail( i[:i.index(":")])
+    return ""
   send_mail(pop[0])
-  return "."
+  return ""
 
-
-  return "Could not reply"
 
 
 
@@ -531,8 +562,11 @@ def seven(pop):
  return ''
  
 # =========================================================
-
-
+def homer(pop):
+ os.system("clear")
+ print homer_simpson
+ raw_input("   ")
+ return ""
 def am_config(pop):
 
  if pop[0] == "-set":
@@ -730,6 +764,36 @@ def addbook(pop):
  return ""
 
 
+def set_wait(pop):
+
+ if pop[0] == "max":
+
+  try:
+   get_it.setWaitMax(int(pop[1]))
+   return "wait max set"
+  except:
+   
+   return "Non vaild option(must be integer)"
+ elif pop[0] == "min":
+  try:
+   get_it.setWaitMin(int(pop[1]))
+   return "wait min set"
+  except:
+   return "Non vaild option(must be integer)"
+ elif pop[0] == "-info":
+  return """              
+            	'The wait' command is used to set wait times in seconds 
+             between mail checks on pop server. There are two time 
+             settings one for idle state (mail wasn't found during last check)
+             and one for the active state(mail was found during last check) these options are set 
+             with "min" and "max" respectively.
+             
+             Example: "wait max 30 wait min 10" 
+             would set auto_mail to check for new mail every 30 seconds
+             if no mail had been found in previous check, and every 10 seconds after an email had been found.
+           """
+ else:
+  return 'Invaild usage. "wait" takes either "min" or "max" followed by integer or "-info" for help'
 def link_commands():
   ins = command_list()
   ins.add_command(reply,1,"reply")
@@ -746,7 +810,9 @@ def link_commands():
   ins.add_command(del_mailbox,0,"nukeit")
   ins.add_command(am_config,1,"am_config")
   ins.add_command(gm_config,1,"gm_config")
+  ins.add_command(set_wait,1,"wait",1)
   ins.add_command(addbook,0,"addbook")
+  ins.add_command(homer,0,"homer")
   return ins
 
 # =======================================================
